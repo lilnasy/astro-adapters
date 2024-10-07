@@ -7,6 +7,7 @@ import enableDestroy from 'server-destroy';
 import { logListeningOn } from './log-listening-on.js';
 import { createAppHandler } from './serve-app.js';
 import { createStaticHandler } from './serve-static.js';
+import { createWebsocketHandler } from './serve-websocket.js';
 import type { Options } from './types.js';
 
 // Used to get Host Value at Runtime
@@ -22,6 +23,7 @@ export default function standalone(app: NodeApp, options: Options) {
 	const host = process.env.HOST ?? hostOptions(options.host);
 	const handler = createStandaloneHandler(app, options);
 	const server = createServer(handler, host, port);
+	server.server.on('upgrade', createWebsocketHandler(app));
 	server.server.listen(port, host);
 	if (process.env.ASTRO_NODE_LOGGING !== 'disabled') {
 		logListeningOn(app.getAdapterLogger(), server.server, options);

@@ -20,7 +20,7 @@ export function createAppHandler(app: NodeApp): RequestHandler {
 		console.error(reason);
 	});
 
-	return async (req, res, next, locals) => {
+	return async (req, res, next, locals = {}) => {
 		let request: Request;
 		try {
 			request = NodeApp.createRequest(req);
@@ -31,7 +31,14 @@ export function createAppHandler(app: NodeApp): RequestHandler {
 			res.end('Internal Server Error');
 			return;
 		}
-
+		/*
+		 * An upgrade request will be handled by a listener attached to the `upgrade` event,
+		 * which is the returned function from createWebsocketHandler().
+		 * 
+		 * The fact that a request is being handled by this function, a listener for the
+		 * `request` event, means that the request was not an upgrade request.  
+		 */
+		locals.upgradeWebSocket = () => { throw new Error("Can't switch protocols on a non-upgrade request.") }
 		const routeData = app.match(request);
 		if (routeData) {
 			const response = await als.run(request.url, () =>

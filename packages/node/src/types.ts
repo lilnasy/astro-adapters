@@ -35,5 +35,5 @@ export type RequestHandlerParams = [
 	req: IncomingMessage,
 	res: ServerResponse,
 	next?: (err?: unknown) => void,
-	locals?: object,
+	locals?: { [key: string]: any },
 ];
